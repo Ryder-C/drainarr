@@ -5,7 +5,6 @@ use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberI
 async fn main() -> anyhow::Result<()> {
     init_tracing();
 
-    let config = Config::from_env()?;
     let http = reqwest::Client::new();
 
     Ok(())

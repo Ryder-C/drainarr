@@ -1,4 +1,5 @@
 mod arr;
+mod collector;
 mod config;
 pub mod domain;
 
