@@ -1,4 +1,4 @@
-use jellydrain::Config;
+use drainarr::Config;
 use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
