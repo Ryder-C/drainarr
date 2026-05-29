@@ -9,7 +9,7 @@ use crate::{
     domain::{ExternalIds, MediaKind, RawItem},
 };
 
-struct SonarrClient {
+pub struct SonarrClient {
     pub api: ArrHttp,
 }
 

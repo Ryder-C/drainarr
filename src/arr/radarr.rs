@@ -9,7 +9,7 @@ use crate::{
     domain::{ExternalIds, MediaKind, RawItem},
 };
 
-struct RadarrClient {
+pub struct RadarrClient {
     pub api: ArrHttp,
 }
 

@@ -4,6 +4,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
     str::FromStr,
+    time::Duration,
 };
 
 use serde::Deserialize;
@@ -19,6 +20,11 @@ pub struct Config {
 
     #[serde(default)]
     pub dry_run: bool,
+    /// Time to wait after deleting before checking usage again. Default 2s.
+    #[serde(with = "humantime_serde", default = "default_settle")]
+    pub settle_time: Duration,
+    #[serde(with = "humantime_serde", default = "default_check_interval")]
+    pub check_interval: Duration,
 
     /// Optional watch-history source. Base off only age if empty.
     pub stats: Option<StatsConfig>,
@@ -52,14 +58,14 @@ impl Config {
 }
 
 #[derive(Debug, Deserialize)]
-struct ArrInstanceConfig {
+pub struct ArrInstanceConfig {
     pub label: String,
     pub url: Url,
     pub api_key: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct StatsConfig {
+pub struct StatsConfig {
     pub kind: StatsKind,
     pub url: Url,
     pub api_key: Option<String>,
@@ -67,22 +73,31 @@ struct StatsConfig {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
-enum StatsKind {
+pub enum StatsKind {
     Janitorr,
-    Streamystats,
 }
 
 #[derive(Debug, Deserialize)]
-struct SeerrConfig {
+pub struct SeerrConfig {
     pub url: Url,
     pub api_key: String,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "String")]
-enum Target {
+pub enum Target {
     UsedPercent(f64),
     UsedBytes(u64),
+}
+
+impl Target {
+    /// Used-byte ceiling for disk of `total` size
+    pub fn used_ceiling(&self, total: u64) -> u64 {
+        match *self {
+            Self::UsedPercent(p) => ((p / 100.0) * total as f64) as u64,
+            Self::UsedBytes(b) => b,
+        }
+    }
 }
 
 impl FromStr for Target {
@@ -114,4 +129,12 @@ impl TryFrom<String> for Target {
     fn try_from(s: String) -> Result<Self> {
         s.parse()
     }
+}
+
+fn default_settle() -> Duration {
+    Duration::from_secs(2)
+}
+
+fn default_check_interval() -> Duration {
+    Duration::from_mins(1)
 }

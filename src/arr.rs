@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use reqwest::{Method, Response};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use url::Url;
 
 type TagMap = HashMap<u32, String>;
 
@@ -18,16 +18,18 @@ struct Tag {
     label: String,
 }
 
-struct ArrHttp {
+pub struct ArrHttp {
     pub label: String,
-    pub base_url: String,
+    pub base_url: Url,
     pub api_key: String,
     pub http: reqwest::Client,
 }
 
 impl ArrHttp {
-    fn url(&self, path: &str) -> String {
-        format!("{}/api/v3/{}", self.base_url.trim_end_matches('/'), path)
+    fn url(&self, path: &str) -> Url {
+        self.base_url
+            .join(&format!("api/v3/{}", path))
+            .expect("valid url path")
     }
 
     async fn request<B: Serialize>(
