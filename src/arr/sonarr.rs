@@ -90,13 +90,13 @@ impl SonarrClient {
     async fn unmonitor_season(&self, series_id: u64, season: u32) -> Result<()> {
         let mut series = self.get_series(series_id).await?;
 
-        series
+        if let Some(s) = series
             .seasons
             .iter_mut()
             .find(|s| s.season_number == season)
-            .map(|s| {
-                s.monitored = false;
-            });
+        {
+            s.monitored = false;
+        }
 
         self.api
             .put(&format!("series/{series_id}"), &series)

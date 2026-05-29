@@ -26,7 +26,7 @@ impl JanitorrStats {
         loop {
             let history = self.fetch_page(path, query, page).await?;
             for record in history.content {
-                if latest.map_or(true, |l| record.played_at > l) {
+                if latest.is_none_or(|l| record.played_at > l) {
                     latest = Some(record.played_at);
                 }
             }
@@ -43,7 +43,7 @@ impl JanitorrStats {
     async fn fetch_page(
         &self,
         path: &str,
-        query: &[(&str, String)],
+        _query: &[(&str, String)],
         page: u32,
     ) -> Result<HistoryPage> {
         let url = self.base_url.join(path).expect("valid path");

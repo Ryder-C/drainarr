@@ -51,10 +51,10 @@ impl EvictionEngine {
     async fn delete_one(&self, c: &Candidate) -> Result<()> {
         let r = &c.item.raw;
         c.item.arr.delete(r.arr_id, r.season).await?;
-        if let Some(req) = &self.requester {
-            if let Err(e) = req.clear_request(&r.ids, c.item.arr.kind()).await {
-                warn!(title=%r.title, error=%e, "couldn't clear request from requester service");
-            }
+        if let Some(req) = &self.requester
+            && let Err(e) = req.clear_request(&r.ids, c.item.arr.kind()).await
+        {
+            warn!(title=%r.title, error=%e, "couldn't clear request from requester service");
         }
         Ok(())
     }
