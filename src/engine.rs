@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bytesize::ByteSize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::sleep;
 use tracing::{info, warn};
@@ -30,7 +31,7 @@ impl EvictionEngine {
             let size = c.item.raw.size_bytes;
 
             if self.dry_run {
-                info!(title=%c.item.raw.title, arr=c.item.arr.label(), size, recency=%c.recency, "DRY RUN: would delete");
+                info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "DRY RUN: would delete");
                 used = used.saturating_sub(size); // simulate freeing space
             } else {
                 info!(title=%c.item.raw.title, arr=c.item.arr.label(), "deleting");

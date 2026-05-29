@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bytesize::ByteSize;
 use tracing::info;
 
 use crate::{collector::CandidateCollector, engine::EvictionEngine, resolver::RecencyResolver};
@@ -31,7 +32,7 @@ impl Drainarr {
 
         info!(
             deleted = report.deleted,
-            freed_bytes = report.freed,
+            freed_bytes = %ByteSize(report.freed),
             reached_target = report.reached_target,
             "drain complete"
         );
