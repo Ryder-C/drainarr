@@ -1,6 +1,7 @@
+use anyhow::Result;
 use std::sync::Arc;
 
-use futures::{StreamExt, stream};
+use futures::{Stream, TryStreamExt};
 
 use crate::{
     domain::{Candidate, MediaItem},
@@ -14,12 +15,13 @@ pub struct RecencyResolver {
 }
 
 impl RecencyResolver {
-    pub async fn resolve(&self, items: Vec<MediaItem>) -> Vec<Candidate> {
-        stream::iter(items)
-            .map(|item| self.resolve_one(item))
-            .buffer_unordered(STATS_CONCURRENCY)
-            .collect()
-            .await
+    pub fn resolve(
+        &self,
+        items: impl Stream<Item = Result<MediaItem>>,
+    ) -> impl Stream<Item = Result<Candidate>> {
+        items
+            .map_ok(move |item| async move { Ok::<_, anyhow::Error>(self.resolve_one(item).await) })
+            .try_buffer_unordered(STATS_CONCURRENCY)
     }
 
     async fn resolve_one(&self, item: MediaItem) -> Candidate {

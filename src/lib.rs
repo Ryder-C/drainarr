@@ -1,7 +1,7 @@
 mod app;
 mod arr;
 mod collector;
-mod config;
+pub mod config;
 mod disk;
 pub mod domain;
 mod engine;
@@ -12,7 +12,6 @@ mod stats;
 pub use app::Drainarr;
 pub use arr::{ArrHttp, ArrInstance, radarr::RadarrClient, sonarr::SonarrClient};
 pub use collector::CandidateCollector;
-pub use config::{Config, StatsKind};
 pub use disk::DiskMonitor;
 pub use engine::EvictionEngine;
 pub use requests::{RequestService, seerr::SeerrClient};

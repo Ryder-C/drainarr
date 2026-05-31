@@ -1,8 +1,12 @@
 use anyhow::Result;
 use bytesize::ByteSize;
+use futures::TryStreamExt;
 use tracing::info;
 
-use crate::{collector::CandidateCollector, engine::EvictionEngine, resolver::RecencyResolver};
+use crate::{
+    collector::CandidateCollector, domain::Candidate, engine::EvictionEngine,
+    resolver::RecencyResolver,
+};
 
 pub struct Drainarr {
     pub collector: CandidateCollector,
@@ -19,8 +23,8 @@ impl Drainarr {
         }
 
         // Collect candidates
-        let items = self.collector.collect().await?;
-        let mut candidates = self.resolver.resolve(items).await;
+        let items = self.collector.collect();
+        let mut candidates: Vec<Candidate> = self.resolver.resolve(items).try_collect().await?;
         candidates.sort_unstable_by_key(|c| c.recency);
         info!(
             eligible = candidates.len(),

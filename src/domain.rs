@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 
 use crate::arr::ArrInstance;
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum MediaKind {
     Movie,
     Series,

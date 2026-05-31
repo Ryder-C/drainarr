@@ -61,21 +61,35 @@ impl SeerrClient {
             .await?
             .json()
             .await
-            .context("failed to parse movie details")
+            .context("failed to parse tv details")
     }
 
     async fn delete_request(&self, id: u32) -> Result<()> {
-        self.delete(&format!("request/{id}"))
-            .await?
-            .json()
+        let _ = self
+            .delete(&format!("request/{id}"))
             .await
-            .context("failed to parse delete response")
+            .context(format!("deleting seerr request {id}"))?;
+        Ok(())
+    }
+
+    fn request_matches(req: &MediaRequest, season: Option<u32>) -> bool {
+        match season {
+            None => true,
+            Some(s) => {
+                !req.seasons.is_empty() && req.seasons.iter().any(|si| si.season_number == s)
+            }
+        }
     }
 }
 
 #[async_trait]
 impl RequestService for SeerrClient {
-    async fn clear_request(&self, ids: &ExternalIds, kind: MediaKind) -> Result<()> {
+    async fn clear_request(
+        &self,
+        ids: &ExternalIds,
+        kind: MediaKind,
+        season: Option<u32>,
+    ) -> Result<()> {
         // Seerr only supports looking up by tmdb so just ignore any media without it
         let Some(tmdb_id) = ids.tmdb else {
             return Ok(());
@@ -85,7 +99,9 @@ impl RequestService for SeerrClient {
 
         // Clear requests
         for req in info.requests {
-            self.delete_request(req.id).await?;
+            if Self::request_matches(&req, season) {
+                self.delete_request(req.id).await?;
+            }
         }
 
         Ok(())

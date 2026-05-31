@@ -30,7 +30,7 @@ impl JanitorrStats {
                     latest = Some(record.played_at);
                 }
             }
-            if page >= history.total_pages {
+            if page + 1 >= history.total_pages {
                 break;
             }
             page += 1;
@@ -43,13 +43,14 @@ impl JanitorrStats {
     async fn fetch_page(
         &self,
         path: &str,
-        _query: &[(&str, String)],
+        query: &[(&str, String)],
         page: u32,
     ) -> Result<HistoryPage> {
         let url = self.base_url.join(path).expect("valid path");
 
         self.http
             .get(url)
+            .query(query)
             .query(&[("page", page)])
             .send()
             .await?
@@ -94,7 +95,7 @@ impl StatsProvider for JanitorrStats {
     ) -> Result<Option<DateTime<Utc>>> {
         let (path, query) = match kind {
             MediaKind::Movie => ("history/movies", Self::movie_query(ids)),
-            MediaKind::Series => ("history/series", Self::series_query(ids)),
+            MediaKind::Series => ("history/shows", Self::series_query(ids)),
         };
 
         // If there are somehow no usable ids treat as unwatched

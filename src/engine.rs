@@ -4,7 +4,12 @@ use std::{sync::Arc, time::Duration};
 use tokio::time::sleep;
 use tracing::{info, warn};
 
-use crate::{config::Target, disk::DiskMonitor, domain::Candidate, requests::RequestService};
+use crate::{
+    config::Target,
+    disk::{DiskMonitor, Usage},
+    domain::Candidate,
+    requests::RequestService,
+};
 
 pub struct EvictionEngine {
     pub disk: DiskMonitor,
@@ -15,10 +20,9 @@ pub struct EvictionEngine {
 }
 
 impl EvictionEngine {
-    pub async fn evict(&self, sorted: Vec<Candidate>) -> Result<Report> {
-        let total = self.disk.usage()?.total;
+    pub async fn evict(&self, sorted: impl IntoIterator<Item = Candidate>) -> Result<Report> {
+        let Usage { total, mut used } = self.disk.usage()?;
         let ceiling = self.target.used_ceiling(total);
-        let mut used = self.disk.usage()?.used;
 
         let mut report = Report::default();
         let mut it = sorted.into_iter();
@@ -32,7 +36,7 @@ impl EvictionEngine {
 
             if self.dry_run {
                 info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "DRY RUN: would delete");
-                used = used.saturating_sub(size); // simulate freeing space
+                used = used.saturating_sub(size);
             } else {
                 info!(title=%c.item.raw.title, arr=c.item.arr.label(), "deleting");
                 self.delete_one(&c).await?;
@@ -52,7 +56,7 @@ impl EvictionEngine {
         let r = &c.item.raw;
         c.item.arr.delete(r.arr_id, r.season).await?;
         if let Some(req) = &self.requester
-            && let Err(e) = req.clear_request(&r.ids, c.item.arr.kind()).await
+            && let Err(e) = req.clear_request(&r.ids, c.item.arr.kind(), r.season).await
         {
             warn!(title=%r.title, error=%e, "couldn't clear request from requester service");
         }

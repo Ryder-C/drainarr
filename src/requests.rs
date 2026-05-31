@@ -7,5 +7,10 @@ use crate::domain::{ExternalIds, MediaKind};
 
 #[async_trait]
 pub trait RequestService: Send + Sync {
-    async fn clear_request(&self, ids: &ExternalIds, kind: MediaKind) -> Result<()>;
+    async fn clear_request(
+        &self,
+        ids: &ExternalIds,
+        kind: MediaKind,
+        season: Option<u32>,
+    ) -> Result<()>;
 }

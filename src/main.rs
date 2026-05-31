@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use drainarr::{
-    ArrHttp, ArrInstance, CandidateCollector, Config, DiskMonitor, Drainarr, EvictionEngine,
-    JanitorrStats, RadarrClient, RecencyResolver, RequestService, SeerrClient, SonarrClient,
-    StatsKind, StatsProvider,
+    ArrHttp, ArrInstance, CandidateCollector, DiskMonitor, Drainarr, EvictionEngine, JanitorrStats,
+    RadarrClient, RecencyResolver, RequestService, SeerrClient, SonarrClient, StatsProvider,
+    config::{ArrInstanceConfig, Config, StatsKind},
 };
 use tokio::time::interval;
 use tracing::error;
@@ -19,25 +19,21 @@ async fn main() -> anyhow::Result<()> {
     let instances = build_instances(&cfg, &http);
 
     // Optional backends
-    let stats: Option<Arc<dyn StatsProvider>> = if let Some(stats) = cfg.stats {
-        match stats.kind {
-            StatsKind::Janitorr => Some(Arc::new(JanitorrStats {
-                base_url: stats.url,
+    let stats = cfg.stats.map(|s| -> Arc<dyn StatsProvider> {
+        match s.kind {
+            StatsKind::Janitorr => Arc::new(JanitorrStats {
+                base_url: s.url,
                 http: http.clone(),
-            })),
+            }),
         }
-    } else {
-        None
-    };
-    let requester: Option<Arc<dyn RequestService>> = if let Some(seerr) = cfg.seerr {
-        Some(Arc::new(SeerrClient {
-            base_url: seerr.url,
-            api_key: seerr.api_key,
-            http,
-        }))
-    } else {
-        None
-    };
+    });
+    let requester = cfg.seerr.map(|s| -> Arc<dyn RequestService> {
+        Arc::new(SeerrClient {
+            base_url: s.url,
+            api_key: s.api_key,
+            http: http.clone(),
+        })
+    });
 
     let app = Drainarr {
         collector: CandidateCollector { instances },
@@ -61,29 +57,25 @@ async fn main() -> anyhow::Result<()> {
             error!(error = %e, "drain run failed, retrying next tick");
         }
     }
-    Ok(())
 }
 
 fn build_instances(cfg: &Config, http: &reqwest::Client) -> Vec<Arc<dyn ArrInstance>> {
-    let mut v: Vec<Arc<dyn ArrInstance>> = Vec::new();
-    for c in &cfg.radarr {
-        let api = ArrHttp {
+    fn http_for(c: &ArrInstanceConfig, http: &reqwest::Client) -> ArrHttp {
+        ArrHttp {
             label: c.label.clone(),
             base_url: c.url.clone(),
             api_key: c.api_key.clone(),
             http: http.clone(),
-        };
+        }
+    }
 
+    let mut v: Vec<Arc<dyn ArrInstance>> = Vec::new();
+    for c in &cfg.radarr {
+        let api = http_for(c, http);
         v.push(Arc::new(RadarrClient { api }))
     }
     for c in &cfg.sonarr {
-        let api = ArrHttp {
-            label: c.label.clone(),
-            base_url: c.url.clone(),
-            api_key: c.api_key.clone(),
-            http: http.clone(),
-        };
-
+        let api = http_for(c, http);
         v.push(Arc::new(SonarrClient { api }))
     }
     v

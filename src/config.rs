@@ -51,7 +51,7 @@ impl Config {
     fn validate(&self) -> Result<()> {
         ensure!(
             !self.radarr.is_empty() || !self.sonarr.is_empty(),
-            "configure at least on [[radarr]] or [[sonarr]] instance"
+            "configure at least one [[radarr]] or [[sonarr]] instance"
         );
         Ok(())
     }
