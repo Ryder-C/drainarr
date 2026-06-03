@@ -28,8 +28,6 @@ pub struct Config {
 
     /// Optional watch-history source. Base off only age if empty.
     pub stats: Option<StatsConfig>,
-    /// Optional seerr removal.
-    pub seerr: Option<SeerrConfig>,
 
     #[serde(default)]
     pub radarr: Vec<ArrInstanceConfig>,
@@ -75,12 +73,6 @@ pub struct StatsConfig {
 #[serde(rename_all = "lowercase")]
 pub enum StatsKind {
     Janitorr,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct SeerrConfig {
-    pub url: Url,
-    pub api_key: String,
 }
 
 #[derive(Debug, Deserialize)]

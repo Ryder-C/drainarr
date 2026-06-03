@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use drainarr::{
     ArrHttp, ArrInstance, CandidateCollector, DiskMonitor, Drainarr, EvictionEngine, JanitorrStats,
-    RadarrClient, RecencyResolver, RequestService, SeerrClient, SonarrClient, StatsProvider,
+    RadarrClient, RecencyResolver, SonarrClient, StatsProvider,
     config::{ArrInstanceConfig, Config, StatsKind},
 };
 use tokio::time::interval;
@@ -27,13 +27,6 @@ async fn main() -> anyhow::Result<()> {
             }),
         }
     });
-    let requester = cfg.seerr.map(|s| -> Arc<dyn RequestService> {
-        Arc::new(SeerrClient {
-            base_url: s.url,
-            api_key: s.api_key,
-            http: http.clone(),
-        })
-    });
 
     let app = Drainarr {
         collector: CandidateCollector { instances },
@@ -43,7 +36,6 @@ async fn main() -> anyhow::Result<()> {
                 path: cfg.disk_path.clone(),
             },
             target: cfg.target_usage,
-            requester,
             dry_run: cfg.dry_run,
             settle: cfg.settle_time,
         },

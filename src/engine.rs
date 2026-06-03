@@ -1,6 +1,6 @@
 use anyhow::Result;
 use bytesize::ByteSize;
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 use tokio::time::sleep;
 use tracing::{info, warn};
 
@@ -8,13 +8,11 @@ use crate::{
     config::Target,
     disk::{DiskMonitor, Usage},
     domain::Candidate,
-    requests::RequestService,
 };
 
 pub struct EvictionEngine {
     pub disk: DiskMonitor,
     pub target: Target,
-    pub requester: Option<Arc<dyn RequestService>>,
     pub dry_run: bool,
     pub settle: Duration,
 }
@@ -54,13 +52,7 @@ impl EvictionEngine {
 
     async fn delete_one(&self, c: &Candidate) -> Result<()> {
         let r = &c.item.raw;
-        c.item.arr.delete(r.arr_id, r.season).await?;
-        if let Some(req) = &self.requester
-            && let Err(e) = req.clear_request(&r.ids, c.item.arr.kind(), r.season).await
-        {
-            warn!(title=%r.title, error=%e, "couldn't clear request from requester service");
-        }
-        Ok(())
+        c.item.arr.delete(r.arr_id, r.season).await
     }
 }
 
