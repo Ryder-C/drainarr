@@ -34,14 +34,13 @@ impl EvictionEngine {
 
             if self.dry_run {
                 info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "DRY RUN: would delete");
-                used = used.saturating_sub(size);
             } else {
-                info!(title=%c.item.raw.title, arr=c.item.arr.label(), "deleting");
+                info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "deleting");
                 self.delete_one(&c).await?;
                 sleep(self.settle).await;
-                used = self.disk.usage()?.used;
             }
 
+            used = used.saturating_sub(size);
             report.deleted += 1;
             report.freed += size;
         }

@@ -26,6 +26,12 @@ pub struct Config {
     #[serde(with = "humantime_serde", default = "default_check_interval")]
     pub check_interval: Duration,
 
+    /// Minimum time since import (`added` date) before an item is eligible for
+    /// deletion. Items added more recently than this are never touched, regardless
+    /// of watch history. Default: 0 (no protection).
+    #[serde(with = "humantime_serde", default = "default_min_added_age")]
+    pub min_added_age: Duration,
+
     /// Optional watch-history source. Base off only age if empty.
     pub stats: Option<StatsConfig>,
 
@@ -129,4 +135,8 @@ fn default_settle() -> Duration {
 
 fn default_check_interval() -> Duration {
     Duration::from_mins(1)
+}
+
+fn default_min_added_age() -> Duration {
+    Duration::ZERO
 }

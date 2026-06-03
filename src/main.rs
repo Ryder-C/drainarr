@@ -29,7 +29,10 @@ async fn main() -> anyhow::Result<()> {
     });
 
     let app = Drainarr {
-        collector: CandidateCollector { instances },
+        collector: CandidateCollector {
+            instances,
+            min_added_age: cfg.min_added_age,
+        },
         resolver: RecencyResolver { stats },
         engine: EvictionEngine {
             disk: DiskMonitor {
