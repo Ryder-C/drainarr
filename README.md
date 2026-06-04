@@ -11,6 +11,9 @@ just import age.
 > [!TIP]
 > Set `dry_run = true` to log the would-be deletions without calling the APIs.
 
+> [!TIP]
+> Tag any movie or series in Radarr/Sonarr with `drainarr_ignore` to protect it from deletion.
+
 ## Configuration
 
 drainarr reads `config.toml` from its working directory. See
