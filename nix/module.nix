@@ -125,13 +125,12 @@ in {
 
       environment.RUST_LOG = cfg.logLevel;
 
-      preStart = ''
-        install -m 0400 -o ${cfg.user} -g ${cfg.group} \
-          ${configFile} "$RUNTIME_DIRECTORY/config.toml"
-      '';
-
       serviceConfig = {
         Type = "simple";
+        ExecStartPre = "+${pkgs.writeShellScript "drainarr-prestart" ''
+          ${pkgs.coreutils}/bin/install -m 0400 -o ${cfg.user} -g ${cfg.group} \
+            ${configFile} "$RUNTIME_DIRECTORY/config.toml"
+        ''}";
         ExecStart = lib.getExe cfg.package;
         WorkingDirectory = "/run/drainarr";
         RuntimeDirectory = "drainarr";
