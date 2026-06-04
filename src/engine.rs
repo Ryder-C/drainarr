@@ -30,9 +30,9 @@ impl EvictionEngine {
             let size = c.item.raw.size_bytes;
 
             if self.dry_run {
-                info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "DRY RUN: would delete");
+                info!(title=%c.item.raw.title, season=%c.item.raw.season.unwrap_or(0), arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "DRY RUN: would delete");
             } else {
-                info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "deleting");
+                info!(title=%c.item.raw.title, season=%c.item.raw.season.unwrap_or(0), arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "deleting");
                 self.delete_one(&c).await?;
             }
 
