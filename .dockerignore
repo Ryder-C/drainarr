@@ -1,0 +1,13 @@
+target/
+.dev-env/
+.git/
+.jj/
+.github/
+result
+result-*
+*.md
+Dockerfile
+docker-compose*.yml
+flake.nix
+flake.lock
+nix/

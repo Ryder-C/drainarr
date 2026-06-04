@@ -1,0 +1,33 @@
+# Volume to monitor. Pass any path on the filesystem you want to keep under
+# the usage target.
+disk_path = "/data/media"
+
+# Either a percentage ("85%") or an absolute size ("18TB", "500GB", ...).
+target_usage = "85%"
+
+# How often to poll disk usage and (if over target) run a drain pass.
+check_interval = "10m"
+
+# Items imported more recently than this are never touched, even if no one has
+# watched them. Defaults to 0 (no grace period).
+min_added_age = "14d"
+
+# Set to true to log what would be deleted without calling any APIs.
+dry_run = false
+
+# Optional watch-history source. Omit this block to rank purely by import age.
+[stats]
+kind = "janitorr"
+url = "http://localhost:8978"
+
+# One or more Radarr instances.
+[[radarr]]
+label = "movies"
+url = "http://localhost:7878"
+api_key = "REPLACE_ME"
+
+# One or more Sonarr instances.
+[[sonarr]]
+label = "tv"
+url = "http://localhost:8989"
+api_key = "REPLACE_ME"

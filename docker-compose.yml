@@ -1,0 +1,12 @@
+services:
+  drainarr:
+    image: ghcr.io/ryder-c/drainarr:latest
+    container_name: drainarr
+    restart: unless-stopped
+    volumes:
+      - ./config:/config
+      # Mount the volume you want drainarr to monitor at the same path
+      # referenced by `disk_path` in config.toml.
+      - /data/media:/data/media:ro
+    environment:
+      RUST_LOG: info
