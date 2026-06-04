@@ -1,7 +1,5 @@
 use anyhow::Result;
 use bytesize::ByteSize;
-use std::time::Duration;
-use tokio::time::sleep;
 use tracing::{info, warn};
 
 use crate::{
@@ -14,7 +12,6 @@ pub struct EvictionEngine {
     pub disk: DiskMonitor,
     pub target: Target,
     pub dry_run: bool,
-    pub settle: Duration,
 }
 
 impl EvictionEngine {
@@ -37,7 +34,6 @@ impl EvictionEngine {
             } else {
                 info!(title=%c.item.raw.title, arr=c.item.arr.label(), size=%ByteSize(size), recency=%c.recency, "deleting");
                 self.delete_one(&c).await?;
-                sleep(self.settle).await;
             }
 
             used = used.saturating_sub(size);

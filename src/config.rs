@@ -20,9 +20,7 @@ pub struct Config {
 
     #[serde(default)]
     pub dry_run: bool,
-    /// Time to wait after deleting before checking usage again. Default 2s.
-    #[serde(with = "humantime_serde", default = "default_settle")]
-    pub settle_time: Duration,
+    /// Interval to check disk usage and potentially delete items.
     #[serde(with = "humantime_serde", default = "default_check_interval")]
     pub check_interval: Duration,
 
@@ -127,10 +125,6 @@ impl TryFrom<String> for Target {
     fn try_from(s: String) -> Result<Self> {
         s.parse()
     }
-}
-
-fn default_settle() -> Duration {
-    Duration::from_secs(2)
 }
 
 fn default_check_interval() -> Duration {

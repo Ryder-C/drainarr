@@ -40,7 +40,6 @@ async fn main() -> anyhow::Result<()> {
             },
             target: cfg.target_usage,
             dry_run: cfg.dry_run,
-            settle: cfg.settle_time,
         },
     };
 
