@@ -18,7 +18,6 @@ impl Drainarr {
     pub async fn run_once(&self) -> Result<()> {
         // Check disk usage first
         if self.engine.disk.under_target(&self.engine.target)? {
-            info!("under target, nothing to do");
             return Ok(());
         }
 
