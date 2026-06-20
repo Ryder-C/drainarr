@@ -23,15 +23,6 @@ impl SonarrClient {
             .context("parsing Sonarr /series")
     }
 
-    async fn get_series(&self, series_id: u64) -> Result<Series> {
-        self.api
-            .get(&format!("series/{series_id}"), &[])
-            .await?
-            .json()
-            .await
-            .context(format!("parsing Sonarr /series/{series_id}"))
-    }
-
     async fn delete_series(&self, arr_id: u64) -> Result<()> {
         let _ = self
             .api
@@ -88,14 +79,22 @@ impl SonarrClient {
     }
 
     async fn unmonitor_season(&self, series_id: u64, season: u32) -> Result<()> {
-        let mut series = self.get_series(series_id).await?;
+        let mut series: serde_json::Value = self
+            .api
+            .get(&format!("series/{series_id}"), &[])
+            .await?
+            .json()
+            .await?;
 
-        if let Some(s) = series
-            .seasons
-            .iter_mut()
-            .find(|s| s.season_number == season)
-        {
-            s.monitored = false;
+        let seasons = series
+            .get_mut("seasons")
+            .and_then(|s| s.as_array_mut())
+            .context("sonarr series response missing seasons array")?;
+
+        for s in seasons {
+            if s.get("seasonNumber").and_then(|n| n.as_u64()) == Some(season as u64) {
+                s["monitored"] = json!(false);
+            }
         }
 
         self.api
