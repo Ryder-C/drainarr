@@ -65,12 +65,6 @@ impl ArrInstance for RadarrClient {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct MovieFile {
-    date_added: Option<DateTime<Utc>>,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct Movie {
     id: u64,
     title: String,
@@ -80,19 +74,12 @@ struct Movie {
     imdb_id: Option<String>,
     added: Option<DateTime<Utc>>,
     tags: Vec<u32>,
-    movie_file: Option<MovieFile>,
 }
 
 impl Movie {
     /// Converts a Radarr Movie to a RawItem, using the tag map to convert tag ids to labels.
-    /// Prefer when the file was imported, fall back to when added, and if somehow neither exist
-    /// treat as new.
     fn into_raw(self, tags: &TagMap) -> RawItem {
-        let added = self
-            .movie_file
-            .and_then(|f| f.date_added)
-            .or(self.added)
-            .unwrap_or(Utc::now());
+        let added = self.added.unwrap_or(Utc::now());
         RawItem {
             arr_id: self.id,
             season: None,
